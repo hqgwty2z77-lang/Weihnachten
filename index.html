@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adventskalender</title>
+
+<style>
+    body {
+        font-family: "Georgia", serif;
+        background-image: url('https://i.imgur.com/yj8KXgE.jpeg'); /* Weihnachtsmotiv */
+        background-size: cover;
+        background-position: center;
+        margin: 0;
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+
+    h1 {
+        text-shadow: 2px 2px 4px black;
+        margin-bottom: 20px;
+        font-size: 2.5rem;
+    }
+
+    /* Flexibles Grid für Handy & PC */
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 15px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Türdesign */
+    .door {
+        background: #8b0000;
+        border: 3px solid #5a0000;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        padding: 20px;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: gold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .door:hover {
+        transform: scale(1.05);
+        background: #a00000;
+    }
+
+    /* Popup */
+    #popup {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+    }
+
+    #popupContent {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        width: 85%;
+        max-width: 350px;
+        text-align: left;
+        font-size: 1.1rem;
+        color: black;
+        max-height: 70vh;
+        overflow-y: auto;
+        line-height: 1.4;
+    }
+
+    #closeBtn {
+        margin-top: 15px;
+        padding: 8px 15px;
+        background: #8b0000;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    #closeBtn:hover {
+        background: #a00000;
+    }
+
+    /* Handy-Anpassung */
+    @media (max-width: 600px) {
+        .door {
+            height: 110px;
+            font-size: 1.8rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>🎄 Adventskalender 🎁</h1>
+
+<div class="calendar" id="calendar"></div>
+
+<!-- Popup -->
+<div id="popup">
+    <div id="popupContent">
+        <p id="messageText"></p>
+        <button id="closeBtn">Schließen</button>
+    </div>
+</div>
+
+<script>
+// ❤️ Deine Nachrichten
+const messages = {
+    1: "Lieber Hannes, von mir bekommst du einen Adventskalender der ganz besondern Art. Täglich warten auf dich spannende Geheimnisse, die nur darauf warten von dir entdeckt zu werden. Einer meiner Lieblings Weihnachtstraditionen meiner Kindheit war das tägliche Lesen einer Weihnachtsgeschichte mit meiner Mama. Deshalb wartet hinter der ersten Tür eine Weihnachtsgeschichte auf dich. Ich hoffe du kannst meine damalige Freude teilen. Keine Sorge es warten noch ganz viele andere Türen, mit ganz vielen weiteren Überraschungen auf dich. Viel Spaß deine Catha’pa",
+    
+    2: "Guten Morgen, Mittag oder Abend. Heute darfst du ein Geschenk aus der Geschenketasche nehmen. Hdl. Ps: Man munkelt, dass am Samstagabend was geplant ist. SAVE THE  DATE!!",
+    
+    3: "Weihnachtsgeschichte",
+    
+    4: "Guten Morgen, Mittag oder Abend. Heute darfst du ein Geschenk aus der Geschenketasche nehmen. Hdl.",
+    
+    5: "Heute gehts um die Wurst. Fordere catha'pa bei einer Runde RUMMICUP heraus. Der Gewinner bzw die Gwinnerin bekommt einen Punkt. Es kann sein, dass noch weitere Spiele im Verlauf hinter einer Tür stecken. In jedem Spiel kann man Punkte sammeln. Ein Punkt kann man gegen eine Massage einlösen. Drei Punkte gegen einmal ausgehen. Also streng dich an, oder willst du riskieren weiterhin mit Muskelverspannungen rumzuspringen!!!?",
+    
+    6: "DATE-NIGHT heute 19:30 Uhr im Opernhaus Tootsie. Um 18:30 Uhr Treffpunkt bei catha'pa zum Abendessen",
+    
+    7: "2.Advent. Heute wirds gemütlich. Ab ins August-Macke Haus mit uns, vll gibts danach noch einen Kuchen. Yummy",
+    
+    8: "Guten Morgen, Mittag oder Abend. Heute darfst du ein Geschenk aus der Geschenketasche nehmen. Hdl. Evtl ist am Donnerstag wieder was geplant abends. Kannst du???",
+    
+    9: "(im Hintergrund läuft Eye of the Tiger) Ein weiteres Spiel, mit einem weiteren Punkt, den es zu gewinnen gibt.",
+    
+    10:"Guten Morgen, Mittag oder Abend. Heute darfst du ein Geschenk aus der Geschenketasche nehmen. Hdl.",
+
+    11:"Schauspielhaus 19:30 Uhr die Dramaturgie Brechts genießen. Ich hol mir vorher was bei Sefa",
+
+    12:"Weihnachtsgeschichte",
+
+    13:"Auf die Plätze fertig los!",
+
+    14:"Weihnachtsgeschichte. STD Mittwoch Abend",
+
+    15:"Hab dich ganz doll vermisst. Lass uns gemeinsam heute Abendessen. Für das Essen sorge ich",
+
+    16:"Guten Morgen, Mittag oder Abend. Heute darfst du ein Geschenk aus der Geschenketasche nehmen. Hdl.",
+
+    17:"DATE-NIGHT. Nussknacker im Opernhaus",
+
+    18:"Hihi heute wirds lustig. Coockie-Abend",
+
+    19:"Ab geht die Post",
+
+    20:"Weihnachtsgeschichte",
+
+    21:"Spiel",
+
+    22:"Weihnachtsgeschichte",
+
+    23:"Spiel",
+  
+    24:"Frohe Weihnachten. Morgen gibts das große Geschenk. Jetzt darfst du nochmal eine Geschichte genießen. Freu mich auf morgen. Bussi",
+};
+
+    // Türen in zufälliger Reihenfolge mischen
+    const days = Array.from({ length: 24 }, (_, i) => i + 1)
+        .sort(() => Math.random() - 0.5);
+
+    const calendar = document.getElementById("calendar");
+
+    days.forEach(day => {
+        let door = document.createElement("div");
+        door.className = "door";
+        door.textContent = day;
+
+        door.onclick = () => {
+            document.getElementById("messageText").innerHTML = messages[day] || "Noch keine Nachricht!";
+            document.getElementById("popup").style.display = "flex";
+        };
+
+        calendar.appendChild(door);
+    });
+
+    document.getElementById("closeBtn").onclick = () => {
+        document.getElementById("popup").style.display = "none";
+    };
+</script>
+
+</body>
+</html>
+
+
+
+
+
